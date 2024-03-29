@@ -6,7 +6,7 @@ import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
-import javax.xml.transform.Result;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class SellerDaoJDBC implements SellerDao {
 
-    private Connection conn;
+    private final Connection conn;
 
     public SellerDaoJDBC(Connection conn){
         this.conn = conn;
@@ -76,7 +76,7 @@ public class SellerDaoJDBC implements SellerDao {
             st.setInt(6,obj.getId());
 
             int rowsAffected = st.executeUpdate();
-            if (rowsAffected > 0){
+            if (rowsAffected > 0) {
                 System.out.println("Update done on sellerId: " + obj.getId());
             } else {
                 throw new DbException("Unexpected error! no rows affected.");
@@ -88,7 +88,25 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public void deleteById(Integer id) {
+        PreparedStatement st = null;
+        try{
+            st = conn.prepareStatement(
+                    "DELETE from seller WHERE Id = ? "
+            );
+            st.setInt(1,id);
+            int rowsAffected = st.executeUpdate();
 
+            if (rowsAffected > 0){
+                System.out.println("Delete done on sellerId: " + id);
+            } else {
+                throw new DbException("Error: Id don't found. No rows affected.");
+            }
+
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+        }
     }
 
     @Override
@@ -107,8 +125,7 @@ public class SellerDaoJDBC implements SellerDao {
 
             if(rs.next()){
                 Department dep = instantiateDepartment(rs);
-                Seller seller = instantiateSeller(rs,dep);
-                return seller;
+                return instantiateSeller(rs,dep);
             } else {
                 return null;
             }
