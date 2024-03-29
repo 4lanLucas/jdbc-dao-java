@@ -28,5 +28,9 @@ public class Program2 {
 
         System.out.println("=== TEST 4: findAll ===");
         System.out.println(departmentDao.findAll());
+
+        System.out.println("=== TEST 5: update ===");
+        departmentDao.update(new Department(5,"Snacks"));
+
     }
 }
